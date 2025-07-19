@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            height: calc(100vh - 40px);
+        }
+
+        .editor-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px dashed #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+
+        .section:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .section.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .add-item {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .add-item:hover {
+            background: #5a67d8;
+        }
+
+        .remove-item {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        /* Preview Styles */
+        .resume-preview {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+
+        .resume-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .resume-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .resume-title {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .resume-contact {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .resume-section {
+            margin-bottom: 25px;
+        }
+
+        .resume-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .experience-item, .education-item {
+            margin-bottom: 20px;
+            padding-left: 20px;
+            border-left: 3px solid #667eea;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .item-company {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .item-date {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="saveResume()">💾 Save</button>
+        <button class="btn btn-primary" onclick="exportToPDF()">📄 Export PDF</button>
+    </div>
+
+    <div class="container">
+        <div class="editor-panel">
+            <h1>📝 Resume Builder</h1>
+            
+            <div class="section" draggable="true" data-section="personal">
+                <div class="section-title">👤 Personal Information</div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" placeholder="John Doe" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Professional Title</label>
+                    <input type="text" id="jobTitle" placeholder="Software Developer" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="john@example.com" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="phone" placeholder="+1 (555) 123-4567" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="location" placeholder="New York, NY" oninput="updatePreview()">
+                </div>
+            </div>
+
+            <div class="section" draggable="true" data-section="summary">
+                <div class="section-title">📋 Professional Summary</div>
+                <div class="form-group">
+                    <label>Summary</label>
+                    <textarea id="summary" placeholder="Brief professional summary..." oninput="updatePreview()"></textarea>
+                </div>
+            </div>
+
+            <div class="section" draggable="true" data-section="experience">
+                <div class="section-title">💼 Work Experience</div>
+                <div id="experienceList">
+                    <div class="experience-item">
+                        <div class="form-group">
+                            <label>Job Title</label>
+                            <input type="text" class="exp-title" placeholder="Software Developer" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Company</label>
+                            <input type="text" class="exp-company" placeholder="Tech Company Inc." oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" class="exp-date" placeholder="Jan 2020 - Present" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="exp-desc" placeholder="Job responsibilities and achievements..." oninput="updatePreview()"></textarea>
+                        </div>
+                        <button class="remove-item" onclick="removeExperience(this)">Remove</button>
+                    </div>
+                </div>
+                <button class="add-item" onclick="addExperience()">+ Add Experience</button>
+            </div>
+
+            <div class="section" draggable="true" data-section="education">
+                <div class="section-title">🎓 Education</div>
+                <div id="educationList">
+                    <div class="education-item">
+                        <div class="form-group">
+                            <label>Degree</label>
+                            <input type="text" class="edu-degree" placeholder="Bachelor of Computer Science" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Institution</label>
+                            <input type="text" class="edu-school" placeholder="University Name" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="text" class="edu-year" placeholder="2016 - 2020" oninput="updatePreview()">
+                        </div>
+                        <button class="remove-item" onclick="removeEducation(this)">Remove</button>
+                    </div>
+                </div>
+                <button class="add-item" onclick="addEducation()">+ Add Education</button>
+            </div>
+
+            <div class="section" draggable="true" data-section="skills">
+                <div class="section-title">🛠️ Skills</div>
+                <div class="form-group">
+                    <label>Skills (comma separated)</label>
+                    <textarea id="skills" placeholder="JavaScript, Python, React, Node.js..." oninput="updatePreview()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <h1>👁️ Live Preview</h1>
+            <div class="resume-preview" id="resumePreview">
+                <div class="resume-header">
+                    <div class="resume-name" id="previewName">Your Name</div>
+                    <div class="resume-title" id="previewTitle">Your Title</div>
+                    <div class="resume-contact">
+                        <span id="previewEmail">email@example.com</span>
+                        <span id="previewPhone">+1 (555) 123-4567</span>
+                        <span id="previewLocation">Location</span>
+                    </div>
+                </div>
+
+                <div class="resume-section" id="summarySection">
+                    <h3>Professional Summary</h3>
+                    <p id="previewSummary">Your professional summary will appear here...</p>
+                </div>
+
+                <div class="resume-section" id="experienceSection">
+                    <h3>Work Experience</h3>
+                    <div id="previewExperience"></div>
+                </div>
+
+                <div class="resume-section" id="educationSection">
+                    <h3>Education</h3>
+                    <div id="previewEducation"></div>
+                </div>
+
+                <div class="resume-section" id="skillsSection">
+                    <h3>Skills</h3>
+                    <div class="skills-list" id="previewSkills"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
