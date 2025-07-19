@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced CSS Animation Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="animations.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .demo-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .demo-element {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .demo-element:hover {
+            transform: scale(1.05);
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .code-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .code-section h3 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .color-1 { background: linear-gradient(45deg, #ff6b6b, #ee5a24); }
+        .color-2 { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .color-3 { background: linear-gradient(45deg, #45b7d1, #96c93d); }
+        .color-4 { background: linear-gradient(45deg, #f093fb, #f5576c); }
+        .color-5 { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+        .color-6 { background: linear-gradient(45deg, #43e97b, #38f9d7); }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Advanced CSS Animation Library</h1>
+            <p>Professional animations with 3D transforms, complex keyframes, and interactive effects</p>
+        </div>
+
+        <div class="demo-grid">
+            <!-- 3D Transforms -->
+            <div class="demo-card">
+                <h3>3D Cube Rotation</h3>
+                <div class="demo-element color-1 cube-3d" onclick="toggleAnimation(this, 'cube-rotate')">
+                    3D
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleAnimation(document.querySelector('.cube-3d'), 'cube-rotate')">
+                        Toggle Rotation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Morphing Shapes -->
+            <div class="demo-card">
+                <h3>Morphing Shapes</h3>
+                <div class="demo-element color-2 morph-shape" onclick="toggleAnimation(this, 'morph-cycle')">
+                    ◯
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleAnimation(document.querySelector('.morph-shape'), 'morph-cycle')">
+                        Start Morphing
+                    </button>
+                </div>
+            </div>
+
+            <!-- Particle Effect -->
+            <div class="demo-card">
+                <h3>Particle Explosion</h3>
+                <div class="demo-element color-3 particle-container" onclick="createParticles(this)">
+                    💥
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="createParticles(document.querySelector('.particle-container'))">
+                        Explode!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Liquid Animation -->
+            <div class="demo-card">
+                <h3>Liquid Wave</h3>
+                <div class="demo-element color-4 liquid-wave" onclick="toggleAnimation(this, 'wave-motion')">
+                    🌊
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleAnimation(document.querySelector('.liquid-wave'), 'wave-motion')">
+                        Start Wave
+                    </button>
+                </div>
+            </div>
+
+            <!-- Glitch Effect -->
+            <div class="demo-card">
+                <h3>Glitch Effect</h3>
+                <div class="demo-element color-5 glitch-text" onclick="toggleAnimation(this, 'glitch-animation')">
+                    GLITCH
+                </div>
+                <div class="controls">
+                    <button class="btn" onclick="toggleAnimation(document.querySelector('.glitch-text'), 'glitch-animation')">
+                        Activate Glitch
+                    </button>
+                </div>
+            </div>
+
+            <!-- Magnetic Hover -->
+            <div class="demo-card">
+                <h3>Magnetic Hover</h3>
+                <div class="demo-element color-6 magnetic-element" onmousemove="magneticHover(event, this)" onmouseleave="resetMagnetic(this)">
+                    🧲
+                </div>
+                <div class="controls">
+                    <p style="font-size: 14px; color: #666;">Hover over the element to see the magnetic effect</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="code-section">
+            <h3>📝 CSS Code Examples</h3>
+            
+            <h4>3D Cube Rotation:</h4>
+            <pre><code>@keyframes cube-rotate {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  25% { transform: rotateX(90deg) rotateY(0deg) rotateZ(0deg); }
+  50% { transform: rotateX(90deg) rotateY(90deg) rotateZ(0deg); }
+  75% { transform: rotateX(90deg) rotateY(90deg) rotateZ(90deg); }
+  100% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+}
+
+.cube-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.cube-3d.animate {
+  animation: cube-rotate 3s infinite linear;
+}</code></pre>
+
+            <h4>Morphing Shapes:</h4>
+            <pre><code>@keyframes morph-cycle {
+  0% { border-radius: 50%; transform: scale(1) rotate(0deg); }
+  25% { border-radius: 0%; transform: scale(1.2) rotate(90deg); }
+  50% { border-radius: 50% 0% 50% 0%; transform: scale(0.8) rotate(180deg); }
+  75% { border-radius: 0% 50% 0% 50%; transform: scale(1.1) rotate(270deg); }
+  100% { border-radius: 50%; transform: scale(1) rotate(360deg); }
+}
+
+.morph-shape.animate {
+  animation: morph-cycle 2s infinite ease-in-out;
+}</code></pre>
+
+            <h4>Glitch Effect:</h4>
+            <pre><code>@keyframes glitch-animation {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.glitch-text.animate {
+  animation: glitch-animation 0.3s infinite;
+  position: relative;
+}
+
+.glitch-text.animate::before,
+.glitch-text.animate::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text.animate::before {
+  animation: glitch-animation 0.3s infinite;
+  color: #ff0000;
+  z-index: -1;
+}
+
+.glitch-text.animate::after {
+  animation: glitch-animation 0.3s infinite reverse;
+  color: #00ff00;
+  z-index: -2;
+}</code></pre>
+        </div>
+    </div>
+
+    <script>
+        function toggleAnimation(element, animationClass) {
+            element.classList.toggle('animate');
+            if (animationClass) {
+                element.classList.toggle(animationClass);
+            }
+        }
+
+        function createParticles(container) {
+            // Remove existing particles
+            const existingParticles = container.querySelectorAll('.particle');
+            existingParticles.forEach(p => p.remove());
+
+            // Create new particles
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 8px;
+                    height: 8px;
+                    background: white;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    animation: particle-explosion 1s ease-out forwards;
+                    animation-delay: ${i * 0.1}s;
+                `;
+                
+                const angle = (360 / 12) * i;
+                const distance = 50 + Math.random() * 30;
+                particle.style.setProperty('--angle', angle + 'deg');
+                particle.style.setProperty('--distance', distance + 'px');
+                
+                container.appendChild(particle);
+            }
+
+            // Clean up particles after animation
+            setTimeout(() => {
+                const particles = container.querySelectorAll('.particle');
+                particles.forEach(p => p.remove());
+            }, 1500);
+        }
+
+        function magneticHover(event, element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const deltaX = event.clientX - centerX;
+            const deltaY = event.clientY - centerY;
+            
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxDistance = 100;
+            
+            if (distance < maxDistance) {
+                const force = (maxDistance - distance) / maxDistance;
+                const moveX = deltaX * force * 0.3;
+                const moveY = deltaY * force * 0.3;
+                
+                element.style.transform = `translate(${moveX}px, ${moveY}px) scale(${1 + force * 0.1})`;
+            }
+        }
+
+        function resetMagnetic(element) {
+            element.style.transform = 'translate(0px, 0px) scale(1)';
+        }
+
+        // Add dynamic styles for particle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particle-explosion {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(
+                        calc(cos(var(--angle)) * var(--distance)),
+                        calc(sin(var(--angle)) * var(--distance))
+                    ) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
