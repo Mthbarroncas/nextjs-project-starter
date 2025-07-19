@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Collaborative Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #4fc3f7;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .user-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #404040;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #2d2d2d;
+            border-right: 1px solid #404040;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .sidebar-section h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .online-users {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #404040;
+        }
+
+        .user-cursor {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .version-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .version-item {
+            padding: 10px;
+            border-bottom: 1px solid #404040;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .version-item:hover {
+            background: #404040;
+        }
+
+        .version-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .version-author {
+            font-size: 14px;
+            color: #4fc3f7;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .editor-toolbar {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            background: #404040;
+            border: none;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #4fc3f7;
+            color: #1a1a1a;
+        }
+
+        .toolbar-btn.active {
+            background: #4fc3f7;
+            color: #1a1a1a;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border: none;
+            outline: none;
+            resize: none;
+            position: relative;
+        }
+
+        .cursor-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .remote-cursor {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            animation: blink 1s infinite;
+        }
+
+        .remote-cursor::after {
+            content: attr(data-user);
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: inherit;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .conflict-indicator {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: #ff5722;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .conflict-indicator.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .footer {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            border-top: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .word-count {
+            display: flex;
+            gap: 20px;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .header-controls {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 Collaborative Editor</h1>
+        <div class="header-controls">
+            <div class="user-indicator">
+                <div class="user-avatar" style="background: #4fc3f7;">U</div>
+                <span>You</span>
+                <div class="status-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>👥 Online Users (3)</h3>
+                <div class="online-users">
+                    <div class="user-item">
+                        <div class="user-avatar" style="background: #4fc3f7;">U</div>
+                        <span>You</span>
+                        <div class="user-cursor" style="background: #4fc3f7;"></div>
+                    </div>
+                    <div class="user-item">
+                        <div class="user-avatar" style="background: #ff5722;">A</div>
+                        <span>Alice</span>
+                        <div class="user-cursor" style="background: #ff5722;"></div>
+                    </div>
+                    <div class="user-item">
+                        <div class="user-avatar" style="background: #4caf50;">B</div>
+                        <span>Bob</span>
+                        <div class="user-cursor" style="background: #4caf50;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🕒 Version History</h3>
+                <div class="version-history">
+                    <div class="version-item" onclick="loadVersion(1)">
+                        <div class="version-author">You</div>
+                        <div class="version-time">2 minutes ago</div>
+                        <div>Added introduction paragraph</div>
+                    </div>
+                    <div class="version-item" onclick="loadVersion(2)">
+                        <div class="version-author">Alice</div>
+                        <div class="version-time">5 minutes ago</div>
+                        <div>Fixed typos in section 2</div>
+                    </div>
+                    <div class="version-item" onclick="loadVersion(3)">
+                        <div class="version-author">Bob</div>
+                        <div class="version-time">8 minutes ago</div>
+                        <div>Added code examples</div>
+                    </div>
+                    <div class="version-item" onclick="loadVersion(4)">
+                        <div class="version-author">You</div>
+                        <div class="version-time">12 minutes ago</div>
+                        <div>Initial document creation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-container">
+            <div class="editor-toolbar">
+                <button class="toolbar-btn" onclick="formatText('bold')" title="Bold">
+                    <strong>B</strong>
+                </button>
+                <button class="toolbar-btn" onclick="formatText('italic')" title="Italic">
+                    <em>I</em>
+                </button>
+                <button class="toolbar-btn" onclick="formatText('underline')" title="Underline">
+                    <u>U</u>
+                </button>
+                <button class="toolbar-btn" onclick="insertCode()" title="Code Block">
+                    </>
+                </button>
+                <button class="toolbar-btn" onclick="insertList()" title="Bullet List">
+                    • List
+                </button>
+                <button class="toolbar-btn" onclick="saveDocument()" title="Save">
+                    💾 Save
+                </button>
+                <button class="toolbar-btn" onclick="exportDocument()" title="Export">
+                    📤 Export
+                </button>
+            </div>
+
+            <textarea class="editor" id="editor" placeholder="Start typing your document here...">
+# Collaborative Document
+
+Welcome to our real-time collaborative editor! This document is being edited by multiple users simultaneously.
+
+## Features
+
+- **Real-time synchronization**: See changes from other users instantly
+- **Conflict resolution**: Automatic handling of simultaneous edits
+- **Version history**: Track all changes with timestamps
+- **Multi-cursor support**: See where other users are typing
+- **Offline support**: Continue working even without internet
+
+## Getting Started
+
+1. Start typing in this editor
+2. Invite others to collaborate
+3. Watch as changes appear in real-time
+4. Use the version history to track changes
+
+## Code Example
+
+```javascript
+// Real-time collaboration using WebSockets
+const socket = new WebSocket('ws://localhost:8080');
+
+socket.onmessage = (event) => {
+    const operation = JSON.parse(event.data);
+    applyOperation(operation);
+};
+
+function sendOperation(op) {
+    socket.send(JSON.stringify(op));
+}
+```
+
+## Current Collaborators
+
+- You (editing now)
+- Alice (viewing)
+- Bob (editing paragraph 2)
+
+---
+
+*This document was last saved 30 seconds ago*
+            </textarea>
+
+            <div class="cursor-overlay" id="cursorOverlay">
+                <div class="remote-cursor" style="background: #ff5722; top: 120px; left: 150px;" data-user="Alice"></div>
+                <div class="remote-cursor" style="background: #4caf50; top: 280px; left: 80px;" data-user="Bob"></div>
+            </div>
+
+            <div class="conflict-indicator" id="conflictIndicator">
+                ⚠️ Conflict detected - resolving automatically
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="word-count">
+            <span>Words: <span id="wordCount">156</span></span>
+            <span>Characters: <span id="charCount">1,247</span></span>
+            <span>Lines: <span id="lineCount">42</span></span>
+        </div>
+        <div class="sync-status">
+            <div class="status-indicator"></div>
+            <span>Synced</span>
+            <span>Last saved: <span id="lastSaved">30s ago</span></span>
+        </div>
+    </div>
+
+    <script src="collaborative-editor.js"></script>
+</body>
+</html>
